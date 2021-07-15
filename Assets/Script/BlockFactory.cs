@@ -6,6 +6,8 @@ public class BlockFactory : MonoBehaviour
 {
     public GameObject blockPrefab;//方块预制体 之后会通过 加载脚本加载保存
 
+    public GameObject offcut;//边角料
+
     GameObject lastBlock;//上一次方块记录, 之后会通过 事件监听数值变化而改变 
 
     float blockVerticalOffSet = 1f;//出生方块的高度 之后会通过 加载脚本加载保存
@@ -17,8 +19,10 @@ public class BlockFactory : MonoBehaviour
         lastBlock = GameManager.Instance._curTopBlock; //初始化
 
         EventSystem.OnTopBlockChange += LastBlockChange;
+        EventSystem.OnCreateNewFoundation += CreateNewFoundation;
     }
 
+    
 
 
     private void Update()
@@ -46,6 +50,10 @@ public class BlockFactory : MonoBehaviour
         //lastBlock=_curblock; //之后 当方块完全落下之后 会在MoveCubeController重新设置
     }
 
+    /// <summary>
+    /// 当顶层改变时候的回调函数
+    /// </summary>
+
     void LastBlockChange()
     {
         lastBlock = GameManager.Instance._curTopBlock;
@@ -56,9 +64,50 @@ public class BlockFactory : MonoBehaviour
         //EventSystem.OnTopBlockChange -= LastBlockChange;
     }
 
-    private  void OnDisable() 
+
+
+
+    /// <summary>
+    /// 用来处理新顶层生成与缩放
+    /// </summary>
+    /// <param name="movecube">停止下来作为新顶层的移动方块</param>
+    void CreateNewFoundation(GameObject movecube) 
+    {
+        Vector3 tPos = lastBlock.transform.position;//获取顶层的位置
+        Vector3 tSize = lastBlock.transform.localScale;//获取顶层缩放大小
+        Vector3 mPos = movecube.transform.position;//获取移动方块的位置
+        var z_Offset=Mathf.Abs(tPos.z - mPos.z);
+        if (mPos.z<tPos.z)
+        {
+            movecube.transform.position = new Vector3(mPos.x, mPos.y , tPos.z - z_Offset / 2);
+
+            
+            var v3=new Vector3(tPos.x, tPos.y + tSize.y, tPos.z - (tSize.z / 2 + z_Offset / 2));
+            CreatOffCut(ref v3,ref tSize,z_Offset);
+        }
+        else
+        {
+            movecube.transform.position = new Vector3(mPos.x, mPos.y, tPos.z + z_Offset / 2);
+        
+            var v3=new Vector3(tPos.x, tPos.y + tSize.y, tPos.z + (tSize.z / 2 + z_Offset / 2));
+            CreatOffCut( ref v3,ref tSize,z_Offset);
+        }
+        movecube.transform.localScale= new Vector3(tSize.x, tSize.y, Mathf.Abs(tSize.z - z_Offset));
+    }
+
+    
+    void CreatOffCut(ref Vector3 pos,ref Vector3 tSize,float z_Offset)
+    {
+        var offcuting =Instantiate<GameObject>(offcut,pos,Quaternion.identity);
+        offcuting.transform.localScale=new Vector3(tSize.x, tSize.y, z_Offset);
+        offcuting.AddComponent<OffCutController>();
+
+    }
+
+    private void OnDisable()
     {
         EventSystem.OnTopBlockChange -= LastBlockChange;
+        EventSystem.OnCreateNewFoundation -= CreateNewFoundation;
+        
     }
-    
 }

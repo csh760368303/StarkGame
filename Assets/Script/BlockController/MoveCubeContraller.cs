@@ -79,6 +79,13 @@ public class MoveCubeContraller : MonoBehaviour
 
     void GamestatusChange()
     {
+
+        //Debug.Log($"进行变换之前顶层方块的Z坐标: {transform.position.z},和Z轴方向上的缩放: {transform.localScale.z}");
+        //对新的顶层进行处理
+        EventSystem.OnCreateNewFoundation?.Invoke(gameObject);
+        //.Log("---------------------------------------------------------------------------------------------");
+        //Debug.Log($"进行变换之后顶层方块的Z坐标: {transform.position.z},和Z轴方向上的缩放: {transform.localScale.z}");
+
         //生成边角料 
 
 
@@ -90,6 +97,8 @@ public class MoveCubeContraller : MonoBehaviour
             //调用特效
 
             //游戏结束
+
+            this.enabled = false;
             GameManager.Instance.gameOver=true;
             //在其他脚本处理游戏结束逻辑
 
@@ -97,7 +106,7 @@ public class MoveCubeContraller : MonoBehaviour
         else //否则就视为成功落在顶层底座上
         {
 
-            //生成新顶层和边角料 
+            //生成新顶层和边角料
             GameManager.Instance._curTopBlock = gameObject;
 
             EventSystem.OnTopBlockChange?.Invoke();

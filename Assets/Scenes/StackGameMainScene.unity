@@ -712,8 +712,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.25486445, y: -0.28755444, z: 0.07967843, w: 0.91978693}
-  m_LocalPosition: {x: 4.0985518, y: 5.9009194, z: -6.3482294}
+  m_LocalRotation: {x: 0.13492921, y: -0.70029074, z: 0.13743204, w: 0.68738586}
+  m_LocalPosition: {x: 19.003534, y: 14.034114, z: 0.4090708}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -764,6 +764,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 2482614878809065450, guid: 7fd220a17e14c884ebf1f6f7704fd67d, type: 3}
+  offcut: {fileID: 0}
 --- !u!114 &981784847
 MonoBehaviour:
   m_ObjectHideFlags: 0
