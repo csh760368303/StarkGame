@@ -14,15 +14,16 @@ public class BlockFactory : MonoBehaviour
 
     float blockHorizontalOffSet = -10;//出生方块的高度 之后会通过 加载脚本加载保存
 
+    public static int blockIndex=0;//记录方块数量
     private void Start()
     {
         lastBlock = GameManager.Instance._curTopBlock; //初始化
-
         EventSystem.OnTopBlockChange += LastBlockChange;
+
         EventSystem.OnCreateNewFoundation += CreateNewFoundation;
     }
 
-    
+
 
 
     private void Update()
@@ -41,19 +42,26 @@ public class BlockFactory : MonoBehaviour
 
         _curblock.localScale = lastBlock.transform.localScale;
 
-        _curblock.position = lastBlock.transform.position + Vector3.up * blockVerticalOffSet + Vector3.forward * blockHorizontalOffSet;
+        if (blockIndex % 2 == 1)
+        {
+            _curblock.position = lastBlock.transform.position + Vector3.up * blockVerticalOffSet + Vector3.forward * blockHorizontalOffSet;
+        }
+        else
+        {
+            _curblock.position = lastBlock.transform.position + Vector3.up * blockVerticalOffSet + Vector3.right * blockHorizontalOffSet;
+        }
 
         _curblock.SetParent(lastBlock.transform.parent);
 
         _curblock.gameObject.AddComponent<MoveCubeContraller>();
 
+        blockIndex++;
         //lastBlock=_curblock; //之后 当方块完全落下之后 会在MoveCubeController重新设置
     }
 
     /// <summary>
     /// 当顶层改变时候的回调函数
     /// </summary>
-
     void LastBlockChange()
     {
         lastBlock = GameManager.Instance._curTopBlock;
@@ -71,43 +79,73 @@ public class BlockFactory : MonoBehaviour
     /// 用来处理新顶层生成与缩放
     /// </summary>
     /// <param name="movecube">停止下来作为新顶层的移动方块</param>
-    void CreateNewFoundation(GameObject movecube) 
+    void CreateNewFoundation(GameObject movecube)
     {
         Vector3 tPos = lastBlock.transform.position;//获取顶层的位置
         Vector3 tSize = lastBlock.transform.localScale;//获取顶层缩放大小
         Vector3 mPos = movecube.transform.position;//获取移动方块的位置
-        var z_Offset=Mathf.Abs(tPos.z - mPos.z);
-        if (mPos.z<tPos.z)
+        var z_Offset = Mathf.Abs(tPos.z - mPos.z);
+        var x_Offset = Mathf.Abs(tPos.x - mPos.x);
+        if (blockIndex % 2 == 0)
         {
-            movecube.transform.position = new Vector3(mPos.x, mPos.y , tPos.z - z_Offset / 2);
+            if (mPos.z < tPos.z)
+            {
+                movecube.transform.position = new Vector3(mPos.x, mPos.y, tPos.z - z_Offset / 2);
 
-            
-            var v3=new Vector3(tPos.x, tPos.y + tSize.y, tPos.z - (tSize.z / 2 + z_Offset / 2));
-            CreatOffCut(ref v3,ref tSize,z_Offset);
+
+                var v3 = new Vector3(tPos.x, tPos.y + tSize.y, tPos.z - (tSize.z / 2 + z_Offset / 2));
+                CreatOffCut(ref v3, ref tSize, z_Offset);
+            }
+            else
+            {
+                movecube.transform.position = new Vector3(mPos.x, mPos.y, tPos.z + z_Offset / 2);
+
+                var v3 = new Vector3(tPos.x, tPos.y + tSize.y, tPos.z + (tSize.z / 2 + z_Offset / 2));
+                CreatOffCut(ref v3, ref tSize, z_Offset);
+            }
+            movecube.transform.localScale = new Vector3(tSize.x, tSize.y, Mathf.Abs(tSize.z - z_Offset));
         }
         else
         {
-            movecube.transform.position = new Vector3(mPos.x, mPos.y, tPos.z + z_Offset / 2);
-        
-            var v3=new Vector3(tPos.x, tPos.y + tSize.y, tPos.z + (tSize.z / 2 + z_Offset / 2));
-            CreatOffCut( ref v3,ref tSize,z_Offset);
+            if (mPos.x < tPos.x)
+            {
+                movecube.transform.position = new Vector3(tPos.x - x_Offset / 2, mPos.y, mPos.z);
+
+
+                var v3 = new Vector3(tPos.x - (tSize.x / 2 + x_Offset / 2), tPos.y + tSize.y, tPos.z);
+                CreatOffCut(ref v3, ref tSize, x_Offset);
+            }
+            else
+            {
+                movecube.transform.position = new Vector3(tPos.x + x_Offset / 2, mPos.y, mPos.z);
+
+                var v3 = new Vector3(tPos.x + (tSize.x / 2 + x_Offset / 2), tPos.y + tSize.y, tPos.z);
+                CreatOffCut(ref v3, ref tSize, x_Offset);
+            }
+            movecube.transform.localScale = new Vector3(Mathf.Abs(tSize.x - x_Offset), tSize.y, tSize.z);
         }
-        movecube.transform.localScale= new Vector3(tSize.x, tSize.y, Mathf.Abs(tSize.z - z_Offset));
+
     }
 
-    
-    void CreatOffCut(ref Vector3 pos,ref Vector3 tSize,float z_Offset)
-    {
-        var offcuting =Instantiate<GameObject>(offcut,pos,Quaternion.identity);
-        offcuting.transform.localScale=new Vector3(tSize.x, tSize.y, z_Offset);
-        offcuting.AddComponent<OffCutController>();
 
+    void CreatOffCut(ref Vector3 pos, ref Vector3 tSize, float Offset)
+    {
+        var offcuting = Instantiate<GameObject>(offcut, pos, Quaternion.identity);
+        if (blockIndex % 2 == 0)
+        {
+            offcuting.transform.localScale = new Vector3(tSize.x, tSize.y, Offset);
+        }
+        else
+        {
+            offcuting.transform.localScale = new Vector3(Offset, tSize.y, tSize.z);       
+        }
+        offcuting.AddComponent<OffCutController>();
     }
 
     private void OnDisable()
     {
         EventSystem.OnTopBlockChange -= LastBlockChange;
         EventSystem.OnCreateNewFoundation -= CreateNewFoundation;
-        
+        blockIndex=0;
     }
 }

@@ -16,7 +16,7 @@ public class OffCutController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        c.a -= Time.deltaTime * 0.5f;
+        c.a -= Time.deltaTime * 1f;
         mr.material.color=c;
         if (c.a<0)
         {

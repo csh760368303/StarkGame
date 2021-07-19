@@ -6,21 +6,26 @@ public class MoveCubeContraller : MonoBehaviour
 {
     /*----------------------------------------------------------*/
     //方块一些参数 之后由 BlockFactory 创建新对象MoveCubeModel 从csv中读取参数获取赋值
-    float translationSpeed = 8f;
-    float drapSpeed = 3f;
+    float translationSpeed = 8f;//水平方向方块的移动速度
+    float drapSpeed = 3f;//竖直方向方块掉落的速度
     Vector3 initialPos; //初始位置(诞生点)
-    bool forward; //是否往前走
-    Vector3 target;
-    bool Istranslation;
-    bool IsDropDown;
+    bool forward; //是否往前走 
+    Vector3 target;//掉落位置 目的地
+    bool Istranslation;//是否保持移动 默认为出生后就保持移动 直到鼠标右键点击后 改变状态
+    bool IsDropDown;//控制 是否掉落 默认为false 等待点击右键后,改变状态
 
+    int blockIndex; //从factory获取当前方块的序列号, 之后会通过model来实现数据的获取
     /*----------------------------------------------------------*/
     private void Awake()
     {
         forward = true;
+
         Istranslation = true;
         IsDropDown = false;
         initialPos = transform.position;
+    }
+    private void Start() {
+        blockIndex=BlockFactory.blockIndex;
     }
     private void Update()
     {
@@ -52,14 +57,30 @@ public class MoveCubeContraller : MonoBehaviour
 
         if (forward) //如果确定往前走
         {
-            transform.Translate(0, 0, Time.deltaTime * translationSpeed); //前进
+            if (blockIndex%2==0)
+            {
+                transform.Translate(0, 0, Time.deltaTime * translationSpeed); //z前进
+            }
+            else
+            {
+                transform.Translate(Time.deltaTime * translationSpeed, 0, 0); //x前进
+            }
+
             if (Vector3.Distance(transform.position,initialPos)>= 20) //前进超过20m
                 forward = !forward; //变为后退状态                    
         }
         else //如果往后退
         {
-            transform.Translate(0, 0, -Time.deltaTime * translationSpeed); //后退
-            if (transform.position.z <= initialPos.z)  //如果退回到初始位置
+            if (blockIndex%2==0)
+            {
+                transform.Translate(0, 0, -Time.deltaTime * translationSpeed); //z后退
+            }
+            else
+            {
+                transform.Translate(-Time.deltaTime * translationSpeed, 0, 0); //x后退
+            }
+
+            if (Vector3.Distance(transform.position,initialPos)<= 0)  //如果退回到初始位置
                 forward = !forward; //又往前走
         }
     }

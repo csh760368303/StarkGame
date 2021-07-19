@@ -764,7 +764,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 2482614878809065450, guid: 7fd220a17e14c884ebf1f6f7704fd67d, type: 3}
-  offcut: {fileID: 0}
+  offcut: {fileID: 2941080089447357590, guid: efd6bde0c54baa94e8b24e71ada4406d, type: 3}
 --- !u!114 &981784847
 MonoBehaviour:
   m_ObjectHideFlags: 0
