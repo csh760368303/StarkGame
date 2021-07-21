@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BlockFactory : MonoBehaviour
 {
+    bool coldDownLock;//创建的冷却锁
+
     public GameObject blockPrefab;//方块预制体 之后会通过 加载脚本加载保存
 
     public GameObject offcut;//边角料
@@ -14,13 +16,16 @@ public class BlockFactory : MonoBehaviour
 
     float blockHorizontalOffSet = -10;//出生方块的高度 之后会通过 加载脚本加载保存
 
-    public static int blockIndex=0;//记录方块数量
+    public static int blockIndex = 0;//记录方块数量
     private void Start()
     {
         lastBlock = GameManager.Instance._curTopBlock; //初始化
-        EventSystem.OnTopBlockChange += LastBlockChange;
 
-        EventSystem.OnCreateNewFoundation += CreateNewFoundation;
+        EventSystem.OnTopBlockChange += LastBlockChange;//订阅最顶上方块改变事件 用来更行全局最上方方块
+
+        EventSystem.OnCreateNewFoundation += CreateNewFoundation;//订阅新基座生成
+
+        coldDownLock = true;
     }
 
 
@@ -28,9 +33,11 @@ public class BlockFactory : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && coldDownLock)
         {
-            BlockInitialized(blockVerticalOffSet, blockHorizontalOffSet);
+            BlockInitialized(blockVerticalOffSet, blockHorizontalOffSet);//实例化方块 分别代表水平高度和 竖直高度,之后要对于 
+
+            coldDownLock = !coldDownLock;
         }
     }
 
@@ -38,9 +45,9 @@ public class BlockFactory : MonoBehaviour
     // 方块的创建与初始化 设置了 缩放 位置 父物体 和添加移动控制脚本,每次的创建都是由上一次方块来决定的.
     void BlockInitialized(float blockVerticalOffSet, float blockHorizontalOffSet)
     {
-        var _curblock = Instantiate<GameObject>(blockPrefab).transform;
+        var _curblock = Instantiate<GameObject>(blockPrefab).transform;//生成一个方块
 
-        _curblock.localScale = lastBlock.transform.localScale;
+        _curblock.localScale = lastBlock.transform.localScale;//调整当前放块大小 和 顶层方块大小一致
 
         if (blockIndex % 2 == 1)
         {
@@ -65,6 +72,7 @@ public class BlockFactory : MonoBehaviour
     void LastBlockChange()
     {
         lastBlock = GameManager.Instance._curTopBlock;
+        coldDownLock =true;
     }
 
     private void OnDestroy()
@@ -81,6 +89,8 @@ public class BlockFactory : MonoBehaviour
     /// <param name="movecube">停止下来作为新顶层的移动方块</param>
     void CreateNewFoundation(GameObject movecube)
     {
+        
+
         Vector3 tPos = lastBlock.transform.position;//获取顶层的位置
         Vector3 tSize = lastBlock.transform.localScale;//获取顶层缩放大小
         Vector3 mPos = movecube.transform.position;//获取移动方块的位置
@@ -130,6 +140,10 @@ public class BlockFactory : MonoBehaviour
 
     void CreatOffCut(ref Vector3 pos, ref Vector3 tSize, float Offset)
     {
+        if (Offset <= 0.05f)
+        {
+            return;
+        }
         var offcuting = Instantiate<GameObject>(offcut, pos, Quaternion.identity);
         if (blockIndex % 2 == 0)
         {
@@ -137,7 +151,7 @@ public class BlockFactory : MonoBehaviour
         }
         else
         {
-            offcuting.transform.localScale = new Vector3(Offset, tSize.y, tSize.z);       
+            offcuting.transform.localScale = new Vector3(Offset, tSize.y, tSize.z);
         }
         offcuting.AddComponent<OffCutController>();
     }
@@ -146,6 +160,6 @@ public class BlockFactory : MonoBehaviour
     {
         EventSystem.OnTopBlockChange -= LastBlockChange;
         EventSystem.OnCreateNewFoundation -= CreateNewFoundation;
-        blockIndex=0;
+        blockIndex = 0;
     }
 }

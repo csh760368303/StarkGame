@@ -26,7 +26,5 @@ public class GameManager : SignletonBase<GameManager>
     protected override void OnDestroy()
     {
         base.OnDestroy();
-
-        
     }
 }
