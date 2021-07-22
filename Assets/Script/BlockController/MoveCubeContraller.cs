@@ -160,6 +160,10 @@ public class MoveCubeContraller : MonoBehaviour
         else //否则就视为成功落在顶层底座上
         {
             //生成新顶层和边角料
+
+            //分数增加 
+            GameManager.Instance.score+=1;
+
             GameManager.Instance._curTopBlock = gameObject;
             EventSystem.OnTopBlockChange?.Invoke();
             //当完成任务后此脚本关闭监听
